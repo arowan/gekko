@@ -38,6 +38,10 @@ const PaperTrader = function() {
 
   this.propogatedTrades = 0;
   this.propogatedTriggers = 0;
+
+  this.warmupCompleted = false;
+
+  this.warmupCandle;
 }
 
 PaperTrader.prototype.relayPortfolioChange = function() {
@@ -193,7 +197,7 @@ PaperTrader.prototype.createTrigger = function(advice) {
     this.deferredEmit('triggerCreated', {
       id: triggerId,
       at: advice.date,
-      type: 'trialingStop',
+      type: 'trailingStop',
       proprties: {
         trail: trigger.trailValue,
         initialPrice: this.price,
@@ -245,7 +249,17 @@ PaperTrader.prototype.onStopTrigger = function() {
   delete this.activeStopTrigger;
 }
 
+PaperTrader.prototype.processStratWarmupCompleted = function() {
+  this.warmupCompleted = true;
+  this.processCandle(this.warmupCandle, _.noop);
+}
+
 PaperTrader.prototype.processCandle = function(candle, done) {
+  if(!this.warmupCompleted) {
+    this.warmupCandle = candle;
+    return done();
+  }
+
   this.price = candle.close;
   this.candle = candle;
 
