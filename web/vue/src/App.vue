@@ -27,7 +27,6 @@ export default {
 
 #app {
   display: flex;
-  min-height: 100vh;
   flex-direction: column;
 }
 
@@ -57,9 +56,6 @@ input {
 }
 
 .contain {
-  width: 900px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .btn--primary {

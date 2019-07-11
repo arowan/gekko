@@ -43,4 +43,10 @@ export default {}
   text-decoration: underline;
 }
 
+@media only screen and (max-width: 450px) {
+  .menu {
+    flex-direction: column;
+  }
+}
+
 </style>

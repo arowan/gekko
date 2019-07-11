@@ -49,7 +49,7 @@
                   .grd-row-col-2-6 History size
                   .grd-row-col-4-6 {{ config.tradingAdvisor.historySize }}
         div(v-if='warmupRemaining', class='contain brdr--mid-gray p1 bg--orange')
-          | This stratrunner is still warming up for the next 
+          | This stratrunner is still warming up for the next
           i {{ warmupRemaining.replace(',', ' and ') }}
           | , it will not trade until it is warmed up.
         .grd-row(v-if='isStratrunner')
@@ -83,7 +83,7 @@
               .grd-row
                 .grd-row-col-3-6 Alpha
                 .grd-row-col-3-6 {{ round(report.alpha) }} {{ config.watch.currency }}
-        p(v-if='isStratrunner && !watcher && !isArchived') WARNING: stale gekko, not attached to a watcher, please report 
+        p(v-if='isStratrunner && !watcher && !isArchived') WARNING: stale gekko, not attached to a watcher, please report
           a(href='https://github.com/askmike/gekko/issues') here
           | .
         p(v-if='!isArchived')
@@ -91,7 +91,7 @@
         p(v-if='isArchived')
           a(v-on:click='deleteGekko', class='w100--s my1 btn--red') Delete Gekko
         p(v-if='isStratrunner && watcher && !isArchived')
-          em This gekko gets market data from 
+          em This gekko gets market data from
             router-link(:to='"/live-gekkos/" + watcher.id') this market watcher
           | .
       template(v-if='!isLoading')
@@ -292,7 +292,15 @@ export default {
 
       this.candleFetch = 'fetching';
 
-      let to = this.data.events.latest.candle.start;
+      const initalTo = moment(this.data.events.latest.candle.start);
+      const now = moment();
+
+      let to = initalTo;
+      if (now.diff(initalTo, 'days') > 5) {
+        to = now.subtract(5, 'days').utc().format('YYYY-MM-DDTHH:MM:00.000[Z]');
+      }
+
+
       let from = this.data.events.initial.candle.start;
       let candleSize = 1;
 
@@ -323,7 +331,7 @@ export default {
             return c;
           });
         })
-      }, _.random(150, 2500));
+      }, 30000);
     },
     stopGekko: function() {
       if(this.hasLeechers) {
