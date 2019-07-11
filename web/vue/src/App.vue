@@ -27,11 +27,13 @@ export default {
 
 #app {
   display: flex;
+  min-height: 100vh;
   flex-direction: column;
 }
 
 .fill {
   flex: 1;
+  padding: 0px 20px;
 }
 
 .text {
@@ -56,6 +58,9 @@ input {
 }
 
 .contain {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .btn--primary {

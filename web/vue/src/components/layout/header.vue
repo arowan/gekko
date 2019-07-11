@@ -4,8 +4,9 @@
     header.bg--off-white.grd
       .contain.grd-row
         h3.py1.px2.col-2 Gekko UI
+        div.btn--menu(v-on:click.prevent='switchToggle').btn--primary.h3.py1.px2.col-2 &#9776;
     nav.bg--light-gray
-      .menu.contain
+      .menu(v-bind:class='{ showMenu: !isVisible }').contain
         router-link(to='/home').py1 Home
         router-link(to='/live-gekkos').py1 Live Gekkos
         router-link(to='/backtest').py1 Backtest
@@ -16,7 +17,19 @@
 </template>
 
 <script>
-export default {}
+export default {
+  name: 'header',
+  data: () => {
+    return {
+      isVisible: true
+    };
+  },
+  methods: {
+    switchToggle: function() {
+      this.isVisible = !this.isVisible
+    }
+  }
+}
 </script>
 
 <style>
@@ -43,9 +56,28 @@ export default {}
   text-decoration: underline;
 }
 
-@media only screen and (max-width: 450px) {
-  .menu {
+.btn--primary.btn--menu{
+  display: none;
+}
+
+@media(max-width:767px){
+  .btn--primary.btn--menu{
+    position: absolute;
+    right: 10px;
+    height: 44px;
+    display: block;
+  }
+  .menu{
     flex-direction: column;
+    max-height: 0px;
+    overflow: hidden;
+    /* Set our transitions up. */
+    -webkit-transition: max-height 0.8s;
+    -moz-transition: max-height 0.8s;
+    transition: max-height 0.8s;
+  }
+  .menu.showMenu{
+    max-height: 800px;
   }
 }
 
