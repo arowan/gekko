@@ -1,7 +1,7 @@
 <template lang='pug'>
 #chartWrapper(v-bind:class='{ clickable: !isClicked }')
   .shield(v-on:click.prevent='click')
-  svg#chart(width='960', :height='height')
+  svg#chart(width='999px', :height='height')
 </template>
 
 <script>
