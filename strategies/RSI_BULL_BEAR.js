@@ -2,10 +2,10 @@
 	RSI Bull and Bear
 	Use different RSI-strategies depending on a longer trend
 	3 feb 2017
-	
+
 	(CC-BY-SA 4.0) Tommie Hansen
 	https://creativecommons.org/licenses/by-sa/4.0/
-	
+
 */
 
 // req's
@@ -14,38 +14,38 @@ var config = require ('../core/util.js').getConfig();
 
 // strategy
 var strat = {
-	
+
 	/* INIT */
 	init: function()
 	{
 		this.name = 'RSI Bull and Bear';
 		this.requiredHistory = config.tradingAdvisor.historySize;
-		this.resetTrend();		
-		
-		// debug? set to flase to disable all logging/messages (improves performance)
+		this.resetTrend();
+
+		// debug? set to false to disable all logging/messages (improves performance)
 		this.debug = false;
-		
+
 		// performance
 		config.backtest.batchSize = 1000; // increase performance
 		config.silent = true;
 		config.debug = false;
-		
+
 		// add indicators
 		this.addIndicator('maSlow', 'SMA', this.settings.SMA_long );
 		this.addIndicator('maFast', 'SMA', this.settings.SMA_short );
 		this.addIndicator('BULL_RSI', 'RSI', { interval: this.settings.BULL_RSI });
 		this.addIndicator('BEAR_RSI', 'RSI', { interval: this.settings.BEAR_RSI });
-		
+
 		// debug stuff
 		this.startTime = new Date();
 		this.stat = {
 			bear: { min: 100, max: 0 },
 			bull: { min: 100, max: 0 }
 		};
-		
+
 	}, // init()
-	
-	
+
+
 	/* RESET TREND */
 	resetTrend: function()
 	{
@@ -54,10 +54,10 @@ var strat = {
 			direction: 'none',
 			longPos: false,
 		};
-	
+
 		this.trend = trend;
 	},
-	
+
 	/* get lowest/highest for backtest-period */
 	lowHigh: function( rsi, type )
 	{
@@ -73,25 +73,37 @@ var strat = {
 			if( rsi > cur.max ) this.stat.bull.max = rsi;
 		}
 	},
-	
-	
+
+
+	checkStopLoss: function () {
+		var diff = this.trend.price - this.candle.close;
+		return diff / this.trend.price * 100
+	},
+
 	/* CHECK */
 	check: function()
 	{
-		
+		// if (this.processedTicks < 20) {
+			// console.log(this.trend, this.candle.close, this.checkStopLoss())
+		// }
+
+		if (this.trend.direction === 'up' && (this.checkStopLoss() > this.settings.STOP_LOSS)) {
+			return this.short();
+		}
+
 		// get all indicators
 		let ind = this.indicators,
 			maSlow = ind.maSlow.result,
 			maFast = ind.maFast.result,
 			rsi;
-			
+
 		// BEAR TREND
 		if( maFast < maSlow )
 		{
 			rsi = ind.BEAR_RSI.result;
 			if( rsi > this.settings.BEAR_RSI_high ) this.short();
 			else if( rsi < this.settings.BEAR_RSI_low ) this.long();
-			
+
 			if(this.debug) this.lowHigh( rsi, 'bear' );
 			//log.debug('BEAR-trend');
 		}
@@ -105,10 +117,10 @@ var strat = {
 			if(this.debug) this.lowHigh( rsi, 'bull' );
 			//log.debug('BULL-trend');
 		}
-	
+
 	}, // check()
-	
-	
+
+
 	/* LONG */
 	long: function()
 	{
@@ -116,18 +128,25 @@ var strat = {
 		{
 			this.resetTrend();
 			this.trend.direction = 'up';
+			this.trend.price = this.candle.close;
 			this.advice('long');
 			//log.debug('go long');
 		}
-		
+
 		if(this.debug)
 		{
 			this.trend.duration++;
 			log.debug ('Long since', this.trend.duration, 'candle(s)');
 		}
 	},
-	
-	
+
+	stopLoss: function () {
+		if (!this.trend.stopLoss) {
+			this.trend.stopLoss = true;
+			this.advice('short');
+		}
+	},
+
 	/* SHORT */
 	short: function()
 	{
@@ -136,30 +155,31 @@ var strat = {
 		{
 			this.resetTrend();
 			this.trend.direction = 'down';
+			this.trend.price = this.candle.close;
 			this.advice('short');
 		}
-		
+
 		if(this.debug)
 		{
 			this.trend.duration++;
 			log.debug ('Short since', this.trend.duration, 'candle(s)');
 		}
 	},
-	
-	
+
+
 	/* END backtest */
 	end: function(){
-		
+
 		let seconds = ((new Date()- this.startTime)/1000),
 			minutes = seconds/60,
 			str;
-			
+
 		minutes < 1 ? str = seconds + ' seconds' : str = minutes + ' minutes';
-		
+
 		log.debug('====================================');
 		log.debug('Finished in ' + str);
 		log.debug('====================================');
-		
+
 		if(this.debug)
 		{
 			let stat = this.stat;
@@ -169,7 +189,7 @@ var strat = {
 		}
 
 	}
-	
+
 };
 
 module.exports = strat;
