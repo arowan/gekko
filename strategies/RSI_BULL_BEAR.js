@@ -75,9 +75,9 @@ var strat = {
 	},
 
 
-	checkStopLoss: function () {
-		var diff = this.trend.price - this.candle.close;
-		return diff / this.trend.price * 100
+	compareDiff: function (first, second) {
+		var diff = first - second;
+		return diff / first * 100
 	},
 
 	/* CHECK */
@@ -87,7 +87,7 @@ var strat = {
 			// console.log(this.trend, this.candle.close, this.checkStopLoss())
 		// }
 
-		if (this.trend.direction === 'up' && (this.checkStopLoss() > this.settings.STOP_LOSS)) {
+		if (this.trend.direction === 'up' && (this.compareDiff(this.trend.price, this.candle.close) > this.settings.STOP_LOSS)) {
 			return this.short();
 		}
 
@@ -97,10 +97,14 @@ var strat = {
 			maFast = ind.maFast.result,
 			rsi;
 
+		// let blah = this.compareDiff(maSlow, maFast)
+		// console.log(this.candle.start, blah, maSlow, maFast)
+
 		// BEAR TREND
 		if( maFast < maSlow )
 		{
 			rsi = ind.BEAR_RSI.result;
+			// if (this.compareDiff(maSlow, maFast) < this.settings.PAUSE) this.short();
 			if( rsi > this.settings.BEAR_RSI_high ) this.short();
 			else if( rsi < this.settings.BEAR_RSI_low ) this.long();
 
@@ -112,8 +116,10 @@ var strat = {
 		else
 		{
 			rsi = ind.BULL_RSI.result;
-			if( rsi > this.settings.BULL_RSI_high ) this.short();
+			if (this.compareDiff(maSlow, maFast) < this.settings.PAUSE) this.short();
+			else if( rsi > this.settings.BULL_RSI_high ) this.short();
 			else if( rsi < this.settings.BULL_RSI_low )  this.long();
+
 			if(this.debug) this.lowHigh( rsi, 'bull' );
 			//log.debug('BULL-trend');
 		}
@@ -124,6 +130,7 @@ var strat = {
 	/* LONG */
 	long: function()
 	{
+		console.log('long')
 		if( this.trend.direction !== 'up' ) // new trend? (only act on new trends)
 		{
 			this.resetTrend();
@@ -151,6 +158,7 @@ var strat = {
 	short: function()
 	{
 		// new trend? (else do things)
+		console.log('short')
 		if( this.trend.direction !== 'down' )
 		{
 			this.resetTrend();
