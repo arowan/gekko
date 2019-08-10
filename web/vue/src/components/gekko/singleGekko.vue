@@ -273,7 +273,7 @@ export default {
   },
   watch: {
     'data.events.latest.candle.start': function() {
-      this.getCandles();
+      setTimeout(this.getCandles, _.random(100, 2000));
     }
   },
   methods: {
@@ -292,17 +292,8 @@ export default {
 
       this.candleFetch = 'fetching';
 
-      // up unto we have data
-      let to = moment.utc(
-        this.data.lastCandle.start
-      ).unix();
-
-      // max 7 days of data
-      let from = Math.max(
-        moment.utc(this.data.firstCandle.start).unix(),
-        moment.utc(to).subtract(7, 'days').unix()
-      );
-
+      let to = this.data.events.latest.candle.start;
+      let from = this.data.events.initial.candle.start;
       let candleSize = 1;
 
       if(this.type !== 'watcher') {
@@ -332,7 +323,7 @@ export default {
             return c;
           });
         })
-      }, 100);
+      }, _.random(150, 2500));
     },
     stopGekko: function() {
       if(this.hasLeechers) {
